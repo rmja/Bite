@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33103.184
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bite", "src\Bite\Bite.csproj", "{82D6CE58-0E5C-4E0C-A7D8-3E7025774340}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bite.Tests", "test\Bite.Tests\Bite.Tests.csproj", "{2CE53636-DAFF-4213-871D-6B2F7D6A543F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{82D6CE58-0E5C-4E0C-A7D8-3E7025774340}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82D6CE58-0E5C-4E0C-A7D8-3E7025774340}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82D6CE58-0E5C-4E0C-A7D8-3E7025774340}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82D6CE58-0E5C-4E0C-A7D8-3E7025774340}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2CE53636-DAFF-4213-871D-6B2F7D6A543F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CE53636-DAFF-4213-871D-6B2F7D6A543F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CE53636-DAFF-4213-871D-6B2F7D6A543F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CE53636-DAFF-4213-871D-6B2F7D6A543F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {35578A35-01EB-443E-9B70-862CBF2A6A1C}
+	EndGlobalSection
+EndGlobal
