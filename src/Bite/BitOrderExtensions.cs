@@ -58,8 +58,9 @@ namespace Bite
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool GetBit(this BitOrder bitOrder, byte value, int position) => bitOrder == BitOrder.Msb0
-            ? (value & (0x80 >> position)) != 0
-            : (value & (0x01 << position)) != 0;
+        public static byte GetBitMask(this BitOrder bitOrder, int position) =>
+            bitOrder == BitOrder.Msb0
+            ? (byte)(0x80 >> position)
+            : (byte)(0x01 << position);
     }
 }

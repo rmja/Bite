@@ -2,10 +2,10 @@ using System.Collections;
 
 namespace Bite
 {
-    public readonly struct BitView : IReadOnlyList<bool>
+    public readonly struct ReadOnlyBitView : IReadOnlyList<bool>
     {
         private readonly BitArray? _array;
-        private readonly Memory<byte> _bytes;
+        private readonly ReadOnlyMemory<byte> _bytes;
 
         public bool this[int index]
         {
@@ -17,27 +17,7 @@ namespace Bite
                 }
 
                 var mask = BitOrder.GetBitMask(index & 7);
-                var @byte = _bytes.Span[index >> 3];
-                return (@byte & mask) != 0;
-            }
-            set 
-            {
-                if (_array is not null)
-                {
-                    _array[index] = value;
-                    return;
-                }
-
-                var mask = BitOrder.GetBitMask(index & 7);
-                ref byte @byte = ref _bytes.Span[index >> 3];
-                if (value)
-                {
-                    @byte |= mask;
-                }
-                else
-                {
-                    @byte &= (byte)~mask;
-                }
+                return (_bytes.Span[index >> 3] & mask) != 0;
             }
         }
 
@@ -52,10 +32,10 @@ namespace Bite
         public BitOrder BitOrder { get; }
 
         /// <summary>
-        /// Create a new <see cref="BitView"/> over a <see cref="BitArray"/>.
+        /// Create a new <see cref="ReadOnlyBitView"/> over a <see cref="BitArray"/>.
         /// </summary>
         /// <param name="array"></param>
-        public BitView(BitArray array)
+        public ReadOnlyBitView(BitArray array)
         {
             _array = array;
             _bytes = default;
@@ -63,11 +43,11 @@ namespace Bite
         }
 
         /// <summary>
-        /// Create a new <see cref="BitView"/> over a series of bytes
+        /// Create a new <see cref="ReadOnlyBitView"/> over a series of bytes.
         /// </summary>
         /// <param name="bytes"></param>
         /// <param name="bitOrder"></param>
-        public BitView(Memory<byte> bytes, BitOrder bitOrder = BitOrder.Lsb0)
+        public ReadOnlyBitView(ReadOnlyMemory<byte> bytes, BitOrder bitOrder = BitOrder.Lsb0)
         {
             _array = null;
             _bytes = bytes;
@@ -78,7 +58,7 @@ namespace Bite
         /// Let <see cref="BitArray"/> be implicitly assignable.
         /// </summary>
         /// <param name="array"></param>
-        public static implicit operator BitView(BitArray array) => new(array);
+        public static implicit operator ReadOnlyBitView(BitArray array) => new(array);
 
         /// <summary>
         /// Get the bit values as a boolean array.
