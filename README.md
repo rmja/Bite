@@ -25,7 +25,7 @@ writer.Flush();
 Assert.Equal(new byte[] { 0x1A }, buffer.WrittenSpan.ToArray()); // Or 0xB0 for BitOrder.Msb0
 ```
 
-`BitView` (or uquivalently `ReadOnlyBitView`) example:
+`BitView` (or equivalently `ReadOnlyBitView`) example:
 ```C#
 var view = new BitView(new byte[] { 0x03, 0x81 }, BitOrder.Lsb0);
 // or var view = new BitView(new byte[] { 0xC0, 0x81 }, BitOrder.Msb0);
