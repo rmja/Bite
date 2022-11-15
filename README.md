@@ -1,4 +1,7 @@
 # Bite
+
+[![NuGet package](https://img.shields.io/nuget/v/Bite.svg)](https://nuget.org/packages/Bite)
+
 Bite provides fast bit access with the types `BitReader`, `BitWriter`, and `BitView`.
 It supports read and write of different memorepresentations in the form of `Lsb0` and `Msb0`.
 
