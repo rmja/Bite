@@ -35,6 +35,13 @@ namespace Bite
         }
 
         /// <summary>
+        /// Write a single bit.
+        /// </summary>
+        /// <param name="value"></param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WriteBit(bool value) => WriteBits(1, Convert.ToUInt32(value));
+
+        /// <summary>
         /// Write <paramref name="bitCount"/> bits with <paramref name="value"/>.
         /// </summary>
         /// <param name="bitCount"></param>

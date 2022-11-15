@@ -1,11 +1,18 @@
 using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace Bite
 {
     public ref struct BitReader
     {
         private static readonly uint[] _masks = BitUtils.CreateMaskTable();
-        private SequenceReader<byte> _sequence;
+        
+        private readonly ReadOnlySpan<byte> _span;
+        private int _spanPosition = 0;
+        
+        private readonly ReadOnlySequence<byte>? _sequence;
+        private SequenceReader<byte> _sequenceReader;
+
         private ulong _buffer = 0;
         private int _bitsInBuffer = 0;
 
@@ -22,7 +29,20 @@ namespace Bite
         /// <summary>
         /// The total number of bits available to the reader.
         /// </summary>
-        public int BitCount => 8 * (int)_sequence.Length;
+        public int BitCount => 8 * ((int?)_sequence?.Length ?? _span.Length);
+
+        public BitReader(byte[] bytes, BitOrder bitOrder = BitOrder.Lsb0)
+            : this(bytes.AsSpan(), bitOrder)
+        {
+        }
+
+        public BitReader(ReadOnlySpan<byte> bytes, BitOrder bitOrder = BitOrder.Lsb0)
+        {
+            _span = bytes;
+            _sequence = null;
+            _sequenceReader = default;
+            BitOrder = bitOrder;
+        }
 
         public BitReader(ReadOnlyMemory<byte> bytes, BitOrder bitOrder = BitOrder.Lsb0)
             : this(new ReadOnlySequence<byte>(bytes), bitOrder)
@@ -31,9 +51,36 @@ namespace Bite
 
         public BitReader(ReadOnlySequence<byte> sequence, BitOrder bitOrder = BitOrder.Lsb0)
         {
-            _sequence = new SequenceReader<byte>(sequence);
+            _span = default;
+            _sequence = sequence;
+            _sequenceReader = new SequenceReader<byte>(sequence);
             BitOrder = bitOrder;
         }
+
+        /// <summary>
+        /// Try and read a single bit from the reader to <paramref name="value"/>.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryReadBit(out bool value)
+        {
+            if (!TryReadBits(1, out var bits))
+            {
+                value = default;
+                return false;
+            }
+
+            value = bits != 0;
+            return true;
+        }
+
+        /// <summary>
+        /// Read a single bit from the reader.
+        /// </summary>
+        /// <returns></returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ReadBit() => ReadBits(1) != 0;
 
         /// <summary>
         /// Try and read <paramref name="bitCount"/> bits from the reader to <paramref name="value"/>.
@@ -87,8 +134,18 @@ namespace Bite
                 return;
             }
 
-            var value = BitOrder.Read(_sequence.UnreadSpan, out var consumed);
-            _sequence.Advance(consumed);
+            uint value;
+            int consumed;
+            if (_sequence.HasValue)
+            {
+                value = BitOrder.Read(_sequenceReader.UnreadSpan, out consumed);
+                _sequenceReader.Advance(consumed);
+            }
+            else
+            {
+                value = BitOrder.Read(_span[_spanPosition..], out consumed);
+                _spanPosition += consumed;
+            }
 
             var bitCount = 8 * consumed;
             if (BitOrder == BitOrder.Msb0)
@@ -103,7 +160,7 @@ namespace Bite
 
             if (requiredBitCount > _bitsInBuffer)
             {
-                if (_sequence.End)
+                if (!_sequence.HasValue || _sequenceReader.End)
                 {
                     throw new IndexOutOfRangeException();
                 }
@@ -130,7 +187,14 @@ namespace Bite
 
         public void Reset()
         {
-            _sequence = new SequenceReader<byte>(_sequence.Sequence);
+            if (_sequence.HasValue)
+            {
+                _sequenceReader = new SequenceReader<byte>(_sequence.Value);
+            }
+            else
+            {
+                _spanPosition = 0;
+            }
             _buffer = 0;
             _bitsInBuffer = 0;
         }
@@ -140,24 +204,20 @@ namespace Bite
         public ref struct Enumerator
         {
             private BitReader _reader;
+            private bool _current = false;
 
-            public bool Current { get; private set; } = false;
+            public bool Current => _current;
 
             public Enumerator(BitReader reader)
             {
                 _reader = reader;
             }
 
-            public bool MoveNext()
-            {
-                var result = _reader.TryReadBits(1, out var value);
-                Current = Convert.ToBoolean(value);
-                return result;
-            }
+            public bool MoveNext() => _reader.TryReadBit(out _current);
 
             public void Reset()
             {
-                Current = false;
+                _current = false;
                 _reader.Reset();
             }
 

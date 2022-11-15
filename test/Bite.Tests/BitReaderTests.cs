@@ -7,12 +7,16 @@ namespace Bite.Tests
     public class BitReaderTests
     {
         [Theory]
-        [InlineData(new byte[] { 0x1A }, BitOrder.Lsb0)]
-        [InlineData(new byte[] { 0xB0 }, BitOrder.Msb0)]
-        public void CanReadFewBits(byte[] bytes, BitOrder bitOrder)
+        [InlineData(new byte[] { 0x1A }, BitOrder.Lsb0, false)]
+        [InlineData(new byte[] { 0x1A }, BitOrder.Lsb0, true)]
+        [InlineData(new byte[] { 0xB0 }, BitOrder.Msb0, false)]
+        [InlineData(new byte[] { 0xB0 }, BitOrder.Msb0, true)]
+        public void CanReadFewBits(byte[] bytes, BitOrder bitOrder, bool isMemory)
         {
             // Given
-            var reader = new BitReader(bytes, bitOrder);
+            var reader = isMemory
+                ? new BitReader(bytes.AsMemory(), bitOrder)
+                : new BitReader(bytes.AsSpan(), bitOrder);
             Assert.Equal(0, reader.Position);
             Assert.Equal(8, reader.BitCount);
 
@@ -25,17 +29,20 @@ namespace Bite.Tests
         }
 
         [Theory]
-        [InlineData(new byte[] { 0xFA, 0xCB, 0xD1 }, BitOrder.Lsb0, false)]
-        [InlineData(new byte[] { 0xFA, 0xCB, 0xD1 }, BitOrder.Lsb0, true)]
-        [InlineData(new byte[] { 0xB6, 0x8E, 0x5F }, BitOrder.Msb0, false)]
-        [InlineData(new byte[] { 0xB6, 0x8E, 0x5F }, BitOrder.Msb0, true)]
-        public void CanReadBitsInMultipleBytes(byte[] bytes, BitOrder bitOrder, bool fragmentize)
+        [InlineData(new byte[] { 0xFA, 0xCB, 0xD1 }, BitOrder.Lsb0, false, false)]
+        [InlineData(new byte[] { 0xFA, 0xCB, 0xD1 }, BitOrder.Lsb0, true, false)]
+        [InlineData(new byte[] { 0xFA, 0xCB, 0xD1 }, BitOrder.Lsb0, true, true)]
+        [InlineData(new byte[] { 0xB6, 0x8E, 0x5F }, BitOrder.Msb0, false, false)]
+        [InlineData(new byte[] { 0xB6, 0x8E, 0x5F }, BitOrder.Msb0, true, false)]
+        [InlineData(new byte[] { 0xB6, 0x8E, 0x5F }, BitOrder.Msb0, true, true)]
+        public void CanReadBitsInMultipleBytes(byte[] bytes, BitOrder bitOrder, bool isSequence, bool fragmentize)
         {
             // Given
-            var sequence = fragmentize
-                ? TestUtils.Fragmentize(bytes)
-                : new ReadOnlySequence<byte>(bytes);
-            var reader = new BitReader(sequence, bitOrder);
+            var reader = isSequence
+                ? fragmentize
+                    ? new BitReader(TestUtils.Fragmentize(bytes), bitOrder)
+                    : new BitReader(bytes.AsMemory(), bitOrder)
+                : new BitReader(bytes.AsSpan(), bitOrder);
             Assert.Equal(0, reader.Position);
             Assert.Equal(24, reader.BitCount);
 
@@ -49,13 +56,16 @@ namespace Bite.Tests
         }
 
         [Theory]
-        [InlineData(new byte[] { 0x5c, 0x06, 0x8d, 0xa5, 0x61, 0x83, 0xdb, 0x13 }, BitOrder.Lsb0)]
-        [InlineData(new byte[] { 0x5c, 0x06, 0x8d, 0xa5, 0x61, 0x83, 0xdb, 0x13 }, BitOrder.Msb0)]
-        public void CanEnumerateBooleans(byte[] input, BitOrder bitOrder)
+        [InlineData(new byte[] { 0x5c, 0x06, 0x8d, 0xa5, 0x61, 0x83, 0xdb, 0x13 }, BitOrder.Lsb0, false)]
+        [InlineData(new byte[] { 0x5c, 0x06, 0x8d, 0xa5, 0x61, 0x83, 0xdb, 0x13 }, BitOrder.Lsb0, true)]
+        [InlineData(new byte[] { 0x5c, 0x06, 0x8d, 0xa5, 0x61, 0x83, 0xdb, 0x13 }, BitOrder.Msb0, false)]
+        [InlineData(new byte[] { 0x5c, 0x06, 0x8d, 0xa5, 0x61, 0x83, 0xdb, 0x13 }, BitOrder.Msb0, true)]
+        public void CanEnumerateBooleans(byte[] input, BitOrder bitOrder, bool isMemory)
         {
             // Given
-
-            var reader = new BitReader(input, bitOrder);
+            var reader = isMemory
+                ? new BitReader(input.AsMemory(), bitOrder)
+                : new BitReader(input.AsSpan(), bitOrder);
 
             // When
             var bits = reader.ToArray();
