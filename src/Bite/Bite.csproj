@@ -10,7 +10,7 @@
     <Description>Fast BitReader, BitWriter, and BitView utilities using IBufferWriter and Span&lt;byte&gt;</Description>
     <PackageProjectUrl>https://github.com/rmja/Bite</PackageProjectUrl>
     <PackageTags>BitReader;BitWriter;BitView</PackageTags>
-	<Version>1.1.0</Version>
+	<Version>1.2.0</Version>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	<LangVersion>10</LangVersion>
   </PropertyGroup>
